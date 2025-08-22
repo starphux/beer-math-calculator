@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Beer Math Calculator</title>
+  <link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body>
+  <h1>Beer Math Calculator</h1>
+
+  <div class="form">
+    <label>Cans: <input type="number" id="cans" value="12"></label><br>
+    <label>Oz per Can: <input type="number" id="ozPerCan" value="12"></label><br>
+    <label>Total Price ($): <input type="number" step="0.01" id="price" value="15.00"></label><br>
+    <label>ABV (%): <input type="number" step="0.1" id="abv" value="5.0"></label><br>
+    <button onclick="calculate()">Calculate</button>
+  </div>
+
+  <div id="results"></div>
+
+  <script src="assets/js/script.js"></script>
+</body>
+</html>
