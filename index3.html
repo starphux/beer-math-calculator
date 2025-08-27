@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <title>Beer Math Comparator</title>
+  <style>
+    body { font-family: sans-serif; padding: 1rem; background: #fafafa; }
+    h1 { font-size: 1.5rem; }
+    input, button { padding: 0.5rem; margin: 0.25rem; }
+    .results { display: flex; gap: 1rem; margin-top: 1rem; flex-wrap: wrap; }
+    .card {
+      flex: 1;
+      min-width: 220px;
+      background: #fff;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      padding: 1rem;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    .winner { border: 2px solid green; }
+    .card h2 { margin: 0 0 0.5rem 0; }
+    .card p { margin: 0.25rem 0; font-size: 0.9rem; }
+  </style>
+</head>
+<body>
+  <h1>🍺 Beer Math Comparator</h1>
+
+  <div>
+    <input type="text" id="label" placeholder="Beer name">
+    <input type="number" id="cans" placeholder="# of cans">
+    <input type="number" id="ozPerCan" placeholder="Oz per can">
+    <input type="number" id="price" placeholder="Total price ($)" step="0.01">
+    <input type="number" id="abv" placeholder="ABV (%)" step="0.1">
+    <button onclick="addBeer()">Save Beer</button>
+    <button onclick="clearResults()">Clear</button>
+  </div>
+
+  <div class="results" id="results"></div>
+
+  <script>
+    function addBeer() {
+      const label = document.getElementById("label").value.trim();
+      const cans = parseInt(document.getElementById("cans").value);
+      const ozPerCan = parseFloat(document.getElementById("ozPerCan").value);
+      const price = parseFloat(document.getElementById("price").value);
+      const abv = parseFloat(document.getElementById("abv").value);
+
+      if (!label || isNaN(cans) || isNaN(ozPerCan) || isNaN(price) || isNaN(abv) || cans <= 0 || ozPerCan <= 0) {
+        alert("Please enter all fields: name, #cans, oz/can, total price, and ABV%.");
+        return;
+      }
+
+      const totalOz = cans * ozPerCan;
+      const pricePerCan = price / cans;
+      const pricePerOz = price / totalOz;
+      const alcoholPerOz = abv / 100; // oz of ethanol per 1 fl oz
+
+      let saved = JSON.parse(localStorage.getItem("beerResults")) || [];
+      saved.push({ label, cans, ozPerCan, price, abv, totalOz, pricePerCan, pricePerOz, alcoholPerOz });
+      localStorage.setItem("beerResults", JSON.stringify(saved));
+
+      document.querySelectorAll("input").forEach(i => i.value = "");
+
+      renderResults();
+    }
+
+    function getSavedResults() {
+      return JSON.parse(localStorage.getItem("beerResults")) || [];
+    }
+
+    function clearResults() {
+      localStorage.removeItem("beerResults");
+      renderResults();
+    }
+
+    function renderResults() {
+      const container = document.getElementById("results");
+      container.innerHTML = "";
+      let results = getSavedResults();
+
+      if (results.length === 0) {
+        container.innerHTML = "<p>No beers saved yet.</p>";
+        return;
+      }
+
+      // find the cheapest per oz
+      let cheapest = results.reduce((min, b) => b.pricePerOz < min.pricePerOz ? b : min, results[0]);
+
+      results.forEach(b => {
+        const div = document.createElement("div");
+        div.className = "card" + (b.pricePerOz === cheapest.pricePerOz ? " winner" : "");
+        div.innerHTML = `
+          <h2>${b.label}</h2>
+          <p>Total cans: ${b.cans}</p>
+          <p>Total oz: ${b.totalOz}</p>
+          <p>Total price: $${b.price.toFixed(2)}</p>
+          <p>Price per can: $${b.pricePerCan.toFixed(2)}</p>
+          <p>Price per oz: $${b.pricePerOz.toFixed(2)}</p>
+          <p>ABV: ${b.abv}%</p>
+          <p>Alcohol per oz: ${b.alcoholPerOz.toFixed(3)} oz ethanol</p>
+        `;
+        container.appendChild(div);
+      });
+    }
+
+    // render on load
+    renderResults();
+  </script>
+</body>
+</html>
